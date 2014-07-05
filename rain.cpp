@@ -24,6 +24,8 @@ const float RAIN_BUCKETS_TO_MM = 0.2794;       // multiply bucket tips by this f
 
 void Rain() {
 	
+	char msg[12];
+	
 	// rainfall unit conversion
 	switch (general_units) {
 		case SI: // mm
@@ -35,6 +37,20 @@ void Rain() {
 		default:
 		WM_rainfall = -1.0; // error, invalid units
 	}
+	
+	//Colocar a zero apos mudança de cada dia
+	
+	// RF transmission
+	vw_send((uint8_t *)"$", 1);
+	vw_wait_tx(); // Wait until the whole message is gone
+	vw_send((uint8_t *)"R", 1);
+	vw_wait_tx(); // Wait until the whole message is gone
+	dtostrf(WM_rainfall, 2, 1, msg);
+	vw_send((uint8_t *)msg, strlen(msg));
+	vw_wait_tx(); // Wait until the whole message is gone
+	vw_send((uint8_t *)"\r", 1);
+	vw_wait_tx(); // Wait until the whole message is gone/*
+	
 	
 	Serial.print("\n>Rainfall: ");
 	

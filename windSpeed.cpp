@@ -2,6 +2,7 @@
  * windSpeed.cpp
  *
  * Created: 21/05/2014 23:21:47
+ *
  *  Author: Vitor
  */ 
 
@@ -9,7 +10,6 @@
 #include "macros.h"
 
 extern int general_units;
-
 
 //Global variables
 extern float WM_wspeed;
@@ -19,7 +19,6 @@ extern unsigned int windRPM;
 extern volatile unsigned long tempwindRPM, windtime, windlast, windinterval;
 extern volatile unsigned char windintcount;
 extern volatile boolean gotwspeed;
-
 
 void WSpeed_ISR()
 // if the Weather Meters are attached, measure anemometer RPM (2 ticks per rotation), set flag if RPM is updated
@@ -55,6 +54,8 @@ void WSpeed_ISR()
 
 void WSpeed() {
 	
+	char msg[12];
+	
 	// windspeed unit conversion
 	switch (general_units)	{
 		case SI: // meters per second
@@ -69,7 +70,18 @@ void WSpeed() {
 	windRPM = 0;
 	windintcount = 0;
 	
-	Serial.print("\n\n>Wind speed: ");
+	// RF transmission
+	vw_send((uint8_t *)"$", 1);
+	vw_wait_tx(); // Wait until the whole message is gone
+	vw_send((uint8_t *)"S", 1);
+	vw_wait_tx(); // Wait until the whole message is gone
+	dtostrf(WM_wspeed, 2, 1, msg);
+	vw_send((uint8_t *)msg, strlen(msg));
+	vw_wait_tx(); // Wait until the whole message is gone
+	vw_send((uint8_t *)"\r", 1);
+	vw_wait_tx(); // Wait until the whole message is gone/*
+	
+	Serial.print("\n>Wind speed: ");
 	Serial.print(WM_wspeed,2);
 	
 	switch (general_units)	{
@@ -81,5 +93,3 @@ void WSpeed() {
 		break;
 	}
 }
-
-

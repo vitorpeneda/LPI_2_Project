@@ -21,9 +21,10 @@ uint8_t dirOffset=0;
 //=======================================================
 // Find vane direction.
 //=======================================================
-void calcWindDir() {
+void calcWindDir() { 
 	int val;
 	uint8_t x, reading;
+	char msg[12];
 
 	val= analogRead(PIN_WDIR);
 	val >>=2;        // Shift to 255 range
@@ -37,6 +38,20 @@ void calcWindDir() {
 	}
 	
 	x = (x + dirOffset) % 8;   // Adjust for orientation
+	
+	// RF transmission
+	vw_send((uint8_t *)"$", 1);
+	vw_wait_tx(); // Wait until the whole message is gone
+	vw_send((uint8_t *)"W", 1);
+	vw_wait_tx(); // Wait until the whole message is gone	
+	vw_send((uint8_t *)strVals[x],2);
+	vw_wait_tx(); // Wait until the whole message is gone
+	itoa(degree_table[x], msg, 10);
+	vw_send((uint8_t *)msg, strlen(msg));
+	vw_wait_tx(); // Wait until the whole message is gone
+	vw_send((uint8_t *)"\r", 1);
+	vw_wait_tx(); // Wait until the whole message is gone/*
+	
 	Serial.print("\n>Wind dir: ");
 	Serial.print(strVals[x]);
 	Serial.print(" :: ");
