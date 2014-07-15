@@ -1,8 +1,6 @@
 /*
  * rain.h
  *
- * Created: 21/05/2014 01:23:21
- *  Author: Vitor
  */ 
 
 

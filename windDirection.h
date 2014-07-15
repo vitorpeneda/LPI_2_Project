@@ -1,8 +1,6 @@
 /*
  * windDirection.h
  *
- * Created: 22/05/2014 00:48:25
- *  Author: Vitor
  */ 
 
 

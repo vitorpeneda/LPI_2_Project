@@ -1,9 +1,6 @@
 /*
  * windSpeed.cpp
  *
- * Created: 21/05/2014 23:21:47
- *
- *  Author: Vitor
  */ 
 
 #include "windSpeed.h"
@@ -54,19 +51,11 @@ void WSpeed_ISR()
 
 void WSpeed() {
 	
-	char msg[12];
+	char msg[5];
 	
 	// windspeed unit conversion
-	switch (general_units)	{
-		case SI: // meters per second
-		WM_wspeed = float(windRPM) / WIND_RPM_TO_MPS;
-		break;
-		case ENGLISH: // miles per hour
-		WM_wspeed = float(windRPM) / WIND_RPM_TO_MPH;
-		break;
-		default:
-		WM_wspeed = -1.0; // error, invalid units
-	}
+	
+	WM_wspeed = float(windRPM) / WIND_RPM_TO_MPS;	
 	windRPM = 0;
 	windintcount = 0;
 	
@@ -75,21 +64,32 @@ void WSpeed() {
 	vw_wait_tx(); // Wait until the whole message is gone
 	vw_send((uint8_t *)"S", 1);
 	vw_wait_tx(); // Wait until the whole message is gone
-	dtostrf(WM_wspeed, 2, 1, msg);
+	
+	if (WM_wspeed<10)	{
+		vw_send((uint8_t *)"00", 2);
+		vw_wait_tx(); // Wait until the whole message is gone
+		dtostrf(WM_wspeed, 3, 2, msg);
+		vw_send((uint8_t *)msg, strlen(msg));
+		vw_wait_tx(); // Wait until the whole message is gone
+	} 
+	else if(WM_wspeed<100) {
+		vw_send((uint8_t *)"0", 1);
+		vw_wait_tx(); // Wait until the whole message is gone
+		dtostrf(WM_wspeed, 3, 2, msg);
+		vw_send((uint8_t *)msg, strlen(msg));
+		vw_wait_tx(); // Wait until the whole message is gone
+	}
+	else{
+	dtostrf(WM_wspeed, 3, 2, msg);
 	vw_send((uint8_t *)msg, strlen(msg));
 	vw_wait_tx(); // Wait until the whole message is gone
+	}
 	vw_send((uint8_t *)"\r", 1);
 	vw_wait_tx(); // Wait until the whole message is gone/*
 	
+	/*
 	Serial.print("\n>Wind speed: ");
 	Serial.print(WM_wspeed,2);
-	
-	switch (general_units)	{
-		case ENGLISH:
-		Serial.print(" MPH ");
-		break;
-		case SI:
-		Serial.print(" m/s ");
-		break;
-	}
+	Serial.print(" m/s ");
+	*/
 }

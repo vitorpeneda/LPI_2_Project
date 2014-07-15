@@ -1,8 +1,6 @@
 /*
  * tempHum.h
  *
- * Created: 24/05/2014 16:35:41
- *  Author: Vitor
  */ 
 
 

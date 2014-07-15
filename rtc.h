@@ -1,8 +1,6 @@
 /*
  * rtc.h
  *
- * Created: 23/06/2014 15:42:52
- *  Author: Vitor
  */ 
 
 

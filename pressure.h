@@ -1,8 +1,6 @@
 /*
  * pressure.h
  *
- * Created: 04/07/2014 22:36:42
- *  Author: Vitor
  */ 
 
 

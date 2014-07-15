@@ -1,8 +1,6 @@
 /*
  * rain.cpp
  *
- * Created: 21/05/2014 01:22:48
- *  Author: Vitor
  */ 
 
 #include "rain.h"
@@ -18,54 +16,61 @@ volatile unsigned long raintime, rainpulsetime, rainpulseinterval, rain;
 volatile bool rainstate;
 
 //Constant conversion factors
-const float RAIN_BUCKETS_TO_INCHES = 0.0086206896; // multiply bucket tips by this for inches
-const float RAIN_BUCKETS_TO_MM = 0.2794;       // multiply bucket tips by this for mm
 
+
+extern RTC_DS1307 rtc;
 
 void Rain() {
 	
-	char msg[12];
+	char msg[5];
+	DateTime now = rtc.now();
 	
 	// rainfall unit conversion
-	switch (general_units) {
-		case SI: // mm
-		WM_rainfall = rain * RAIN_BUCKETS_TO_MM;
-		break;
-		case ENGLISH: // inches
-		WM_rainfall = rain * RAIN_BUCKETS_TO_INCHES;
-		break;
-		default:
-		WM_rainfall = -1.0; // error, invalid units
-	}
+
+	WM_rainfall = rain * RAIN_BUCKETS_TO_MM;
 	
-	//Colocar a zero apos mudança de cada dia
+	/*Colocar a zero apos mudança de cada dia */
+	
+	if (now.hour() == 0) {
+		Serial.print(now.hour(), DEC);
+		Serial.print(':');
+		Serial.print(now.minute(), DEC);
+		rain=0;
+	}
 	
 	// RF transmission
 	vw_send((uint8_t *)"$", 1);
 	vw_wait_tx(); // Wait until the whole message is gone
 	vw_send((uint8_t *)"R", 1);
 	vw_wait_tx(); // Wait until the whole message is gone
-	dtostrf(WM_rainfall, 2, 1, msg);
-	vw_send((uint8_t *)msg, strlen(msg));
-	vw_wait_tx(); // Wait until the whole message is gone
+	
+	if (WM_rainfall<10)	{
+		vw_send((uint8_t *)"00", 2);
+		vw_wait_tx(); // Wait until the whole message is gone
+		dtostrf(WM_rainfall, 2, 2, msg);
+		vw_send((uint8_t *)msg, strlen(msg));
+		vw_wait_tx(); // Wait until the whole message is gone
+	}
+	else if(WM_rainfall<100) {
+		vw_send((uint8_t *)"0", 1);
+		vw_wait_tx(); // Wait until the whole message is gone
+		dtostrf(WM_rainfall, 2, 2, msg);
+		vw_send((uint8_t *)msg, strlen(msg));
+		vw_wait_tx(); // Wait until the whole message is gone
+	}
+	else{
+		dtostrf(WM_rainfall, 2, 2, msg);
+		vw_send((uint8_t *)msg, strlen(msg));
+		vw_wait_tx(); // Wait until the whole message is gone
+	}
 	vw_send((uint8_t *)"\r", 1);
 	vw_wait_tx(); // Wait until the whole message is gone/*
 	
-	
+	/*	
 	Serial.print("\n>Rainfall: ");
-	
-	switch (general_units) // change decimal point for different units
-	{
-		case ENGLISH:
-		Serial.print(WM_rainfall,2);
-		Serial.print(" inches ");
-		break;
-		case SI:
-		Serial.print(WM_rainfall,2);
-		Serial.print(" mm ");
-		break;
-	}
-	
+	Serial.print(WM_rainfall,2);
+	Serial.print(" mm ");
+	*/
 }
 
 // interrupt routines (these are called by the hardware interrupts, not by the main code)
